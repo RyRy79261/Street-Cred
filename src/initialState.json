@@ -1,0 +1,10 @@
+{
+    "registries": [{
+        "name": "Test",
+        "address": "",
+        "amCurator": true,
+        "claims": [],
+        "claimRaces": [],
+        "curators": []
+    }]
+}
