@@ -107,10 +107,17 @@ contract CCRCore {
     // Can not cancel curator application as pending is not a blocker to any processes
     function initiateRevokeClaim(address _subject, string _claim) public onlyCurator {
         require(claimsRegistry.getClaim(address(this), _subject, keccak256(abi.encodePacked(_claim)))[0] != 0, "Claim not found in registry");
-        require(races[_subject][_claim].pending = false, "Claim race is underway");
+        require(races[_subject][_claim].pending == false, "Claim race is underway");
         races[_subject][_claim].pending = true;
         races[_subject][_claim].revoking = true;
         emit RevokeClaimRequested(_subject, _claim);
+    }
+
+    function initiateClaimRace(address _subject, string _claim) public onlyCurator {
+        require(claimsRegistry.getClaim(address(this), _subject, keccak256(abi.encodePacked(_claim)))[0] == 0, "Claim found in registry");
+        require(races[_subject][_claim].pending == false, "Claim race is underway");
+        races[_subject][_claim].pending = true;
+        voteOnClaim(_subject, _claim, true);
     }
 
     // Curators can vote validity of claims being issued
