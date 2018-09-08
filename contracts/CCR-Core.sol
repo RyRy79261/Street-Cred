@@ -84,7 +84,7 @@ contract CCRCore {
         if(_support) {
             if(notVoted(races[_subject][_claim].votes.inFavor, msg.sender) == false){
                 races[_subject][_claim].votes.inFavor.push(msg.sender);
-                if(checkQuorum(races[_subject][_claim].votes.inFavor.length)) {
+                if(checkQuorum(races[_subject][_claim].votes.inFavor.length, curatorCount, quorum)) {
                     issueClaim(_subject, _claim, true);
                     delete races[_subject][_claim];
                     emit RaceConcluded(_subject, _claim, true);
@@ -94,7 +94,7 @@ contract CCRCore {
         } else {
             if(notVoted(races[_subject][_claim].votes.against, msg.sender) == false){
                 races[_subject][_claim].votes.against.push(msg.sender);
-                if(checkQuorum(races[_subject][_claim].votes.against.length)) {
+                if(checkQuorum(races[_subject][_claim].votes.against.length, curatorCount, quorum)) {
                     issueClaim(_subject, _claim, true);
                     delete races[_subject][_claim];
                     emit RaceConcluded(_subject, _claim, false);
@@ -109,23 +109,26 @@ contract CCRCore {
         if(_support) {
             if(notVoted(curators[_subject].votes.inFavor, msg.sender) == false){
                 curators[_subject].votes.inFavor.push(msg.sender);
-                if(checkQuorum(curators[_subject].votes.inFavor.length)) {
+                if(checkQuorum(curators[_subject].votes.inFavor.length, curatorCount, quorum)) {
                     issueClaim(_subject, "Curator", true);
+                    curators[_subject].validated = true;
+                    curators[_subject].pending = false;
+                    curatorCount = curatorCount + 1;  // Probably dont need safe math, need to confirm
+                    delete curators[_subject].votes;
                 }
             }
-           
         } else {
             if(notVoted(curators[_subject].votes.against, msg.sender) == false){
                 curators[_subject].votes.against.push(msg.sender);
-                if(checkQuorum(curators[_subject].votes.against.length)) {
+                if(checkQuorum(curators[_subject].votes.against.length, curatorCount, quorum)) {
                     issueClaim(_subject, "Curator", false);
                 }
             }
         }
     }
 
-    function checkQuorum(uint _votes) internal view returns(bool quorumReached) {
-        quorumReached = (curatorCount/quorum) + 1 <= _votes;
+    function checkQuorum(uint _votes, uint _voterCount, uint _quorum) internal pure returns(bool quorumReached) {
+        quorumReached = (_voterCount/_quorum) + 1 <= _votes;
     }
 
     // Refactor to hell
