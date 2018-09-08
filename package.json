@@ -10,7 +10,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "react-scripts-ts start",
     "build": "react-scripts-ts build",
-    //"test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject"
   },
   "repository": {
@@ -20,18 +19,6 @@
   "author": "StreetCred-EthBerlin",
   "license": "ISC",
   "dependencies": {
-    "@material-ui/core": "1.4.1",
-    "@material-ui/icons": "2.0.0",
-    "npm": "^5.7.1",
-    "react": "16.4.0",
-    "react-dom": "16.4.0",
-    "react-redux": "^5.0.7",
-    "react-router": "^4.2.0",
-    "react-scripts-ts": "latest",
-    "redux": "^3.7.2",
-    "redux-logger": "^3.0.6",
-    "redux-persist": "^5.5.0",
-    "redux-thunk": "^2.2.0"
   },
   "devDependencies": {
     "@types/history": "^4.6.2",
@@ -45,7 +32,9 @@
     "@types/webpack-env": "^1.13.5",
     "csstype": "^2.4.2",
     "redux-devtools-extension": "^2.13.2",
-    "typescript": "2.8.3"
+    "typescript": "2.8.3",
+    "uport-connect": "^0.7.6"
+
   },
   "bugs": {
     "url": "https://github.com/RyRy79261/Street-Cred/issues"
