@@ -32,8 +32,7 @@ export default class uPortService {
         return contractAbstraction;
     }
 
-    // @TODO: Cant get rif of error
-    public async getTransactionReceiptMined(txHash: string, interval: any = null) {
+    public async getTransactionReceiptMined(txHash: string, interval: any = null): Promise<any> {
         const transactionReceiptAsync = (resolve: any, reject: any) => {
             this.web3.eth.getTransactionReceipt(txHash, (error: any, receipt: any) => {
                 if (error) {
