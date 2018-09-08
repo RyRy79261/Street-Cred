@@ -16,7 +16,9 @@ export default class uPortService {
     }
 
     public getWeb3() {
-        this.web3 = this.uport.getWeb3();
+        window.addEventListener('load', () => {
+            this.web3 = this.uport.getWeb3();
+        });
     }
 
     public async login() {
