@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/RyRy79261/Street-Cred/issues"
   },
-  "homepage": "https://github.com/RyRy79261/Street-Cred#readme"
+  "homepage": "https://github.com/RyRy79261/Street-Cred#readme",
+  "dependencies": {
+    "uport-connect": "^0.7.6"
+  }
 }
