@@ -8,7 +8,9 @@ contract('CCR Core', accounts =>{
         secondAcc,
         thirdAcc,
         forthAcc,
-        fifthAcc
+        fifthAcc,
+        sixthAcc,
+        seventhAcc
     ] = accounts
     let CCRCoreFactoryInstance,
     CCRCoreInstance,
@@ -105,4 +107,104 @@ contract('CCR Core', accounts =>{
         assert.equal(pending, false, "Quorum not reached");
     })
 
+    it('Should create & cancel a claim request', async () => {
+        await CCRCoreInstance.requestClaimRace(claim, {from: sixthAcc});
+        let [pending, revoke, supporting, contesting] = await CCRCoreInstance.getClaimState(sixthAcc, claim);
+
+        assert.equal(pending, true, "Request not created");
+
+        await CCRCoreInstance.cancelClaimRace(claim, {from: sixthAcc});
+        [pending, revoke, supporting, contesting] = await CCRCoreInstance.getClaimState(sixthAcc, claim);
+
+        assert.equal(pending, false, "Request was not canceled");
+    })
+
+    it('Should initialise a revoke claim race', async () => {
+        await CCRCoreInstance.revokeClaim(claim, {from: secondAcc});
+        let [pending, revoke, supporting, contesting] = await CCRCoreInstance.getClaimState(secondAcc, claim);
+        assert.equal(pending, true, "Race not initialised");
+        assert.equal(revoke, true, "Revoke state not initialised");
+    })
+
+    it('Should revoke claim after quorum', async () => {
+        await CCRCoreInstance.voteOnClaim(secondAcc, claim, true, {from: firstAcc});
+        let [pending, revoke, supporting, contesting] = await CCRCoreInstance.getClaimState(sixthAcc, claim);
+        await CCRCoreInstance.voteOnClaim(secondAcc, claim, true, {from: forthAcc});
+        [pending, revoke, supporting, contesting] = await CCRCoreInstance.getClaimState(sixthAcc, claim);
+        assert.equal(pending, false, "Race not complete");
+    })
+
+    it('Reject non curator manual revoke claim access', async () => {
+        try{
+            await CCRCoreInstance.initiateRevokeClaim(firstAcc, claim, {from: seventhAcc})
+        }
+        catch (error) {
+            assert.equal(error.message.indexOf('Not a curator') >= 0, true, "Expected throw not found")
+        }
+    })
+
+    it('Should issue a failed claim once quorum is reached', async () => {
+        await CCRCoreInstance.requestClaimRace(claim, {from: seventhAcc});
+        let [pending, revoke, supporting, contesting] = await CCRCoreInstance.getClaimState(seventhAcc, claim);
+
+        assert.equal(pending, true, "Request not created");
+        await CCRCoreInstance.voteOnClaim(seventhAcc, claim, false, {from: firstAcc});
+        await CCRCoreInstance.voteOnClaim(seventhAcc, claim, false, {from: thirdAcc});
+        [pending, revoke, supporting, contesting] = await CCRCoreInstance.getClaimState(seventhAcc, claim);
+        assert.equal(pending, false, "Quorum not reached");
+        const result = await EthClaimsRegistryInstance.getClaim(CCRCoreInstance.address, seventhAcc, claimAsBytes32);
+        assert.equal(result, falseAsBytes32);
+    })
+    
+    it('Should deny curator rights once a negative quorum is reached', async () => {
+        await CCRCoreInstance.joinCurators({from: seventhAcc});
+        let [pending, validated, supporting, contesting] = await CCRCoreInstance.getCuratorState(seventhAcc);
+        assert.equal(pending, true, "Vote not open successfully");
+        await CCRCoreInstance.voteOnApplicant(seventhAcc, false, {from: firstAcc});
+        await CCRCoreInstance.voteOnApplicant(seventhAcc, false, {from: secondAcc});
+        [pending, validated, supporting, contesting] = await CCRCoreInstance.getCuratorState(seventhAcc);
+        assert.equal(pending, false, "Negative vot not completed")
+    })
+
+    it('It should reject a non curator from voting on claims', async () => {
+        await CCRCoreInstance.requestClaimRace(claim, {from: seventhAcc});
+        try{
+            await CCRCoreInstance.voteOnClaim(seventhAcc, claim, false, {from: seventhAcc});
+        } catch (error) {
+            assert.equal(error.message.indexOf('Not a curator') >= 0, true, "Expected throw not found")
+        }
+    })
+
+    it('It should reject a non curator from voting on curator applications', async () => {
+        await CCRCoreInstance.joinCurators({from: seventhAcc});
+        try{
+            await CCRCoreInstance.voteOnApplicant(seventhAcc, true, {from: seventhAcc});
+        } catch (error) {
+            assert.equal(error.message.indexOf('Not a curator') >= 0, true, "Expected throw not found")
+        }
+    })
+
+    it('It should reject a non curator from manually initialising claim races', async () => {
+        try{
+            await CCRCoreInstance.initiateClaimRace(firstAcc, claim, {from: seventhAcc});
+        } catch (error) {
+            assert.equal(error.message.indexOf('Not a curator') >= 0, true, "Expected throw not found")
+        }
+    })
+
+    it('It should reject a non curator from manually initialising revoke claim races', async () => {
+        try{
+            await CCRCoreInstance.initiateRevokeClaim(firstAcc, claim, {from: seventhAcc});
+        } catch (error) {
+            assert.equal(error.message.indexOf('Not a curator') >= 0, true, "Expected throw not found")
+        }
+    })
+
+    it('It should reject a non curator from manually initialising curator races', async () => {
+        try{
+            await CCRCoreInstance.addCurator(seventhAcc, {from: seventhAcc});
+        } catch (error) {
+            assert.equal(error.message.indexOf('Not a curator') >= 0, true, "Expected throw not found")
+        }
+    })
 });

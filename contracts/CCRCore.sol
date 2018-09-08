@@ -85,7 +85,7 @@ contract CCRCore {
             curators[_subject].pending, curators[_subject].validated, curators[_subject].inFavor, curators[_subject].against
             );
     }
-
+    
     // Curator applications
     // To manually initiate a curator
     function addCurator(address _newCurator) public onlyCurator {
@@ -111,6 +111,7 @@ contract CCRCore {
         races[_subject][_claim].pending = true;
         races[_subject][_claim].revoking = true;
         emit RevokeClaimRequested(_subject, _claim);
+        voteOnClaim(_subject, _claim, true);
     }
 
     function initiateClaimRace(address _subject, string _claim) public onlyCurator {
@@ -140,7 +141,7 @@ contract CCRCore {
             require(notVoted(races[_subject][_claim].against, msg.sender) == true, "Already cast vote");
             races[_subject][_claim].against.push(msg.sender);
             if(checkQuorum(races[_subject][_claim].against.length, curatorCount, quorum)) {
-                issueClaim(_subject, _claim, true);
+                issueClaim(_subject, _claim, false);
                 delete races[_subject][_claim];
                 emit ClaimRaceConcluded(_subject, _claim, false);
             }
