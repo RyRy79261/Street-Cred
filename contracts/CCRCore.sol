@@ -1,4 +1,5 @@
 pragma solidity ^0.4.24;
+pragma experimental "v0.5.0";
 
 import "./EthereumClaimsRegistry.sol";
 
@@ -6,33 +7,32 @@ contract CCRCore {
     EthereumClaimsRegistry public claimsRegistry;
     string public name;
     uint private quorum;
-    uint private curatorCount = 1;
+    uint public curatorCount = 1;
 
-    bytes32 public constant valid = keccak256("true");
-    bytes32 public constant invalid = keccak256("false");
+    bytes32 internal constant valid = keccak256("true");
+    bytes32 internal constant invalid = keccak256("false");
 
-    struct Vote{
+    struct ClaimRace {
+        bool pending;
+        bool revoking;
         address[] inFavor;
         address[] against;    
     }
 
-    struct ClaimRace {
-        Vote votes;  
-        bool pending;
-        uint8 target;
-    }
-
     struct Curator{
-        Vote votes;
         bool pending;
         bool validated;
+        address[] inFavor;
+        address[] against;    
     }
 
     mapping(address => mapping(string => ClaimRace)) private races;
     mapping(address => Curator) private curators;
 
     event ClaimRaceRequested(address indexed _subject, string _claimTopic);
-    event RaceConcluded(address indexed _subject, string _claimTopic, bool _passed);
+    event ClaimRaceConcluded(address indexed _subject, string _claimTopic, bool _passed);
+
+    event RevokeClaimRequested(address indexed _subject,  string _claimTopic);
 
     event CuratorApplication(address indexed _applicant);
     event CuratorApplicationConcluded(address indexed _applicant, bool _passed);
@@ -42,21 +42,15 @@ contract CCRCore {
         _;
     }
 
-    constructor(address _registry, string _name, address _owner, uint _quorum) public {
+    constructor(address _registry, string _name, address _publisher, uint _quorum) public {
         name = _name;
         claimsRegistry = EthereumClaimsRegistry(_registry);
-        curators[_owner].validated = true;
+        curators[_publisher].validated = true;
         quorum = _quorum;
-        issueClaim(_owner, "Curator", true);
     }
 
     function isCurator(address _subject) public view returns(bool) {
         return curators[_subject].validated; 
-    }
-
-     // Most likely too redundant 
-    function checkClaim(address _subject, bytes32 _claim) public view {
-        claimsRegistry.getClaim(address(this), _subject, _claim);
     }
 
     // Claim seekers
@@ -71,71 +65,125 @@ contract CCRCore {
         delete races[msg.sender][_claim];
     }
 
-   // Curator applications
+    function revokeClaim(string _claim) public {
+        require(claimsRegistry.getClaim(address(this), msg.sender, keccak256(abi.encodePacked(_claim)))[0] != 0, "Claim not found in registry");
+        races[msg.sender][_claim].pending = true;
+        races[msg.sender][_claim].revoking = true;
+        emit RevokeClaimRequested(msg.sender, _claim);
+    }
+
+    function getClaimState(address _subject, string _claim) public view returns(
+        bool pending, bool revoking, address[] inFavor, address[] against) {
+        return (
+            races[_subject][_claim].pending, races[_subject][_claim].revoking, races[_subject][_claim].inFavor, races[_subject][_claim].against
+            );
+    }
+
+    function getCuratorState(address _subject) public view returns(
+        bool pending, bool validated, address[] inFavor, address[] against) {
+        return (
+            curators[_subject].pending, curators[_subject].validated, curators[_subject].inFavor, curators[_subject].against
+            );
+    }
+    
+    // Curator applications
+    // To manually initiate a curator
+    function addCurator(address _newCurator) public onlyCurator {
+        require(curators[_newCurator].validated == false, "Already curator");
+        require(curators[_newCurator].pending == false, "Vote already initiated"); 
+        curators[_newCurator].pending = true;
+        emit CuratorApplication(_newCurator);
+        voteOnApplicant(_newCurator, true);
+    }
+
+    // To initiate a vote to become a curator 
     function joinCurators() public {
         require(curators[msg.sender].validated == false, "Already curator");
-        require(curators[msg.sender].pending == false, "Vote initiated"); 
+        require(curators[msg.sender].pending == false, "Vote already initiated"); 
         curators[msg.sender].pending = true;
         emit CuratorApplication(msg.sender);
     }
 
-    function voteOnClaim(address _subject, string _claim, bool _support)  public onlyCurator {
+    // Can not cancel curator application as pending is not a blocker to any processes
+    function initiateRevokeClaim(address _subject, string _claim) public onlyCurator {
+        require(claimsRegistry.getClaim(address(this), _subject, keccak256(abi.encodePacked(_claim)))[0] != 0, "Claim not found in registry");
+        require(races[_subject][_claim].pending == false, "Claim race is underway");
+        races[_subject][_claim].pending = true;
+        races[_subject][_claim].revoking = true;
+        emit RevokeClaimRequested(_subject, _claim);
+        voteOnClaim(_subject, _claim, true);
+    }
+
+    function initiateClaimRace(address _subject, string _claim) public onlyCurator {
+        require(claimsRegistry.getClaim(address(this), _subject, keccak256(abi.encodePacked(_claim)))[0] == 0, "Claim found in registry");
+        require(races[_subject][_claim].pending == false, "Claim race is underway");
+        races[_subject][_claim].pending = true;
+        voteOnClaim(_subject, _claim, true);
+    }
+
+    // Curators can vote validity of claims being issued
+    function voteOnClaim(address _subject, string _claim, bool _support) public onlyCurator {
         require(races[_subject][_claim].pending == true, "Claim race is not underway");
         if(_support) {
-            if(notVoted(races[_subject][_claim].votes.inFavor, msg.sender) == false){
-                races[_subject][_claim].votes.inFavor.push(msg.sender);
-                if(checkQuorum(races[_subject][_claim].votes.inFavor.length, curatorCount, quorum)) {
+            require(notVoted(races[_subject][_claim].inFavor, msg.sender) == true, "Already cast vote");
+            races[_subject][_claim].inFavor.push(msg.sender);
+            if(checkQuorum(races[_subject][_claim].inFavor.length, curatorCount, quorum)) {
+                if(races[_subject][_claim].revoking) {
+                    revokeClaim(_subject, _claim);
+                    delete races[_subject][_claim];
+                }else{
                     issueClaim(_subject, _claim, true);
                     delete races[_subject][_claim];
-                    emit RaceConcluded(_subject, _claim, true);
+                    emit ClaimRaceConcluded(_subject, _claim, true);
                 }
             }
-           
         } else {
-            if(notVoted(races[_subject][_claim].votes.against, msg.sender) == false){
-                races[_subject][_claim].votes.against.push(msg.sender);
-                if(checkQuorum(races[_subject][_claim].votes.against.length, curatorCount, quorum)) {
-                    issueClaim(_subject, _claim, true);
-                    delete races[_subject][_claim];
-                    emit RaceConcluded(_subject, _claim, false);
-                }
+            require(notVoted(races[_subject][_claim].against, msg.sender) == true, "Already cast vote");
+            races[_subject][_claim].against.push(msg.sender);
+            if(checkQuorum(races[_subject][_claim].against.length, curatorCount, quorum)) {
+                issueClaim(_subject, _claim, false);
+                delete races[_subject][_claim];
+                emit ClaimRaceConcluded(_subject, _claim, false);
             }
         }
     }
 
+    // Voting on potential curators 
     function voteOnApplicant(address _subject, bool _support) public onlyCurator {
         require(curators[_subject].pending == true, "Application not initiated");
         // Leaving ability to vote good and bad, consequnce not present yet
         if(_support) {
-            if(notVoted(curators[_subject].votes.inFavor, msg.sender) == false){
-                curators[_subject].votes.inFavor.push(msg.sender);
-                if(checkQuorum(curators[_subject].votes.inFavor.length, curatorCount, quorum)) {
-                    issueClaim(_subject, "Curator", true);
-                    curators[_subject].validated = true;
-                    curators[_subject].pending = false;
-                    curatorCount = curatorCount + 1;  // Probably dont need safe math, need to confirm
-                    delete curators[_subject].votes;
-                    emit CuratorApplicationConcluded(_subject, true);
-                }
+            require(notVoted(curators[_subject].inFavor, msg.sender) == true, "Vote already issued");
+            curators[_subject].inFavor.push(msg.sender);
+            if(checkQuorum(curators[_subject].inFavor.length, curatorCount, quorum)) {
+                curators[_subject].validated = true;
+                curators[_subject].pending = false;
+                curatorCount = curatorCount + 1;  // Probably dont need safe math, need to confirm
+                delete curators[_subject].inFavor;
+                delete curators[_subject].against;
+                emit CuratorApplicationConcluded(_subject, true);
             }
         } else {
-            if(notVoted(curators[_subject].votes.against, msg.sender) == false){
-                curators[_subject].votes.against.push(msg.sender);
-                if(checkQuorum(curators[_subject].votes.against.length, curatorCount, quorum)) {
-                    issueClaim(_subject, "Curator", false);
-                    curators[_subject].pending = false;
-                    delete curators[_subject].votes;
-                    emit CuratorApplicationConcluded(_subject, false);
-                }
+            require(notVoted(curators[_subject].against, msg.sender) == true, "Vote already issued");
+            curators[_subject].against.push(msg.sender);
+            if(checkQuorum(curators[_subject].against.length, curatorCount, quorum)) {
+                curators[_subject].pending = false;
+                delete curators[_subject].inFavor;
+                delete curators[_subject].against;
+                emit CuratorApplicationConcluded(_subject, false);
             }
         }
     }
 
     function checkQuorum(uint _votes, uint _voterCount, uint _quorum) internal pure returns(bool quorumReached) {
-        quorumReached = (_voterCount/_quorum) + 1 <= _votes;
+        quorumReached = (_voterCount/_quorum) <= _votes;
     }
 
-    // Refactor to hell
+    function calcQuorum(uint _voterCount, uint _quorum) public pure returns(uint){
+        return (_voterCount/_quorum);
+    }
+
+    // Refactor probably
     function notVoted(address[] _list, address _target) internal pure returns(bool){
         for(uint i = 0; i < _list.length; i++){
             if(_target == _list[i]){
@@ -151,5 +199,9 @@ contract CCRCore {
         } else {
             claimsRegistry.setClaim(_subject, keccak256(abi.encodePacked(_claim)), invalid);
         }
+    }
+
+    function revokeClaim(address _subject, string _claim) internal {
+        claimsRegistry.removeClaim(address(this), _subject, keccak256(abi.encodePacked(_claim)));
     }
 }
