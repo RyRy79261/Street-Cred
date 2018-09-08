@@ -29,25 +29,13 @@ class ClaimVote extends React.Component<ClaimVote.Props> {
         this.props.onClose();
     };
 
-    approve = () => {
+    handleClose = (against: boolean) => {
 
         this.setState({
-            vote: { against: false, target: this.props.claim.address}
+            vote: { against: against, target: this.props.claim.address }
         });
 
-        this.props.actions.makeClaim(this.state.vote, this.props.claim);
-        this.props.onClose();
-
-        this.setState({ vote: {} });
-    };
-
-    deny = () => {
-
-        this.setState({
-            vote: { against: true, target: this.props.claim.address }
-        });
-
-        this.props.actions.makeClaim(this.state.vote, this.props.claim);
+        this.props.actions.voteOnClaim(this.state.vote, this.props.claim);
         this.props.onClose();
 
         this.setState({ vote: {} });
@@ -60,12 +48,12 @@ class ClaimVote extends React.Component<ClaimVote.Props> {
                 <DialogTitle>Claim: "{this.props.claim.statement}"</DialogTitle>
                
                 <DialogActions>
-                    <Button color="primary" onClick={this.approve}>
+                    <Button color="primary" onClick={this.handleClose(false)}>
                         Approve
-            </Button>
-            <Button color="primary" onClick={this.deny}>
+                    </Button>
+                    <Button color="primary" onClick={this.handleClose(true)}>
                         Deny
-            </Button>
+                    </Button>
                 </DialogActions>
             </Dialog>
         );

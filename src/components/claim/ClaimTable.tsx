@@ -3,18 +3,22 @@ import VoteIcon from '@material-ui/icons/HowToVote';
 import FalseIcon from '@material-ui/icons/NotInterested';
 import TrueIcon from '@material-ui/icons/CheckCircle';
 import ClaimVoteDialog from './ClaimVote';
+import ClaimRequestDialog from './ClaimVote';
 import * as React from 'react';
 import * as ClaimActions from '../../actions/claim';
-import { ClaimRace, ClaimSet, ClaimList } from '../../model/model';
+import { ClaimRace, ClaimList } from '../../model/model';
 
 export namespace ClaimTable {
     export interface Props extends WithStyles<typeof styles> {
         claimList: ClaimList,
         actions: typeof ClaimActions;
+        registryName: string;
     }
 
     export interface State {
-        open: boolean;
+        openRequest: boolean;
+        openVote: boolean;
+        claim: ClaimRace;
       }
 }
 
@@ -25,12 +29,13 @@ class ClaimTable extends React.Component<ClaimTable.Props> {
     }
 
     state = {
-        open: false,
+        openRequest: false,
+        openVote: false,
         claim: {}
     };
 
     vote(claim: ClaimRace) {
-        this.setState({ open: true , claim: claim});
+        this.setState({ openRequest: false, openVote: true, claim: claim});
     }
 
     render() {
@@ -41,9 +46,15 @@ class ClaimTable extends React.Component<ClaimTable.Props> {
             <Paper className={classes.paper}>
             <ClaimVoteDialog
             actions={actions}
-            open={this.state.open}
+            open={this.state.openVote}
             claim={this.state.claim}
-            onClose={() => this.setState({ open: false })}
+            onClose={() => this.setState({ openRequest: false, openVote: false, claim: {}  })}
+          />
+          <ClaimRequestDialog
+            actions={actions}
+            registryName={this.props.registryName}
+            open={this.state.openRequest}
+            onClose={() => this.setState({ openRequest: false, openVote: false, claim: {} })}
           />
                 <Table className={classes.table}>
                     <TableHead>

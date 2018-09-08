@@ -21,6 +21,10 @@ export namespace RegistryPage {
 
   export interface State {
     open: boolean;
+    showRegistries: boolean;
+    showCurators: boolean;
+    showClaims: boolean;
+    selectedRegistryName: string;
   }
 }
 
@@ -30,9 +34,10 @@ class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.Stat
     showRegistries: true,
     showCurators: false,
     showClaims: false,
+    selectedRegistryName: ''
   };
 
-  handleChange = (eventName: string) => {
+  handleChange = (eventName: string, registryName: string) => {
     switch(eventName){
       case "back": {
         this.setState({
@@ -40,6 +45,7 @@ class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.Stat
           showRegistries: true,
           showCurators: false,
           showClaims: false,
+          selectedRegistryName: ''
       });
       }
       case "showCurators": {
@@ -48,6 +54,7 @@ class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.Stat
           showRegistries: false,
           showCurators: true,
           showClaims: false,
+          selectedRegistryName: registryName
       });
       }
       case "showClaims": {
@@ -56,12 +63,13 @@ class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.Stat
           showRegistries: false,
           showCurators: false,
           showClaims: true,
+          selectedRegistryName: registryName
       });
       }
     }
   };
 
-  render() {
+  render() {                       
     const { classes, actions, registries, width } = this.props;
 
     let tableView;
@@ -70,10 +78,10 @@ class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.Stat
       tableView = <RegistryTable registries={registries} actions={actions} back={this.handleChange} openList={this.handleChange} />;
     }
     else if(this.state.showCurators){
-      tableView = <CuratorTable registries={registries} actions={actions} back={this.handleChange}  />;
+      tableView = <CuratorTable registries={registries} actions={actions} back={this.handleChange} registryName={this.state.selectedRegistryName} />;
     }
     else if(this.state.showClaims){
-      tableView = <ClaimTable registries={registries} actions={actions} back={this.handleChange}  />;
+      tableView = <ClaimTable registries={registries} actions={actions} back={this.handleChange} registryName={this.state.selectedRegistryName} />;
     }
 
     return (
@@ -109,7 +117,9 @@ class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.Stat
   handleAddRegistry = () => this.setState({ open: true,
     showRegistries: true,
     showCurators: false,
-    showClaims: false });
+    showClaims: false,
+    selectedRegistryName: ''
+  });
 
 }
 

@@ -29,25 +29,13 @@ class CuratorVote extends React.Component<CuratorVote.Props> {
         this.props.onClose();
     };
 
-    approve = () => {
+    handleClose = (against: boolean) => {
 
         this.setState({
-            vote: { against: false, target: this.props.curator.address}
+            vote: { against: against, target: this.props.curator.address }
         });
 
-        this.props.actions.makeClaim(this.state.vote, this.props.curator);
-        this.props.onClose();
-
-        this.setState({ vote: {} });
-    };
-
-    deny = () => {
-
-        this.setState({
-            vote: { against: true, target: this.props.curator.address }
-        });
-
-        this.props.actions.makeClaim(this.state.vote, this.props.curator);
+        this.props.actions.voteCurator(this.state.vote, this.props.curator);
         this.props.onClose();
 
         this.setState({ vote: {} });
@@ -60,12 +48,12 @@ class CuratorVote extends React.Component<CuratorVote.Props> {
                 <DialogTitle>Curator: "{this.props.claim.address}"</DialogTitle>
                
                 <DialogActions>
-                    <Button color="primary" onClick={this.approve}>
+                    <Button color="primary" onClick={this.handleClose(false)}>
                         Approve
-            </Button>
-            <Button color="primary" onClick={this.deny}>
+                    </Button>
+                    <Button color="primary" onClick={this.handleClose(true)}>
                         Deny
-            </Button>
+                    </Button>
                 </DialogActions>
             </Dialog>
         );

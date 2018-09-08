@@ -4,6 +4,7 @@ import FalseIcon from '@material-ui/icons/NotInterested';
 import PendingIcon from '@material-ui/icons/AccessTime';
 import TrueIcon from '@material-ui/icons/CheckCircle';
 import CuratorVoteDialog from './CuratorVote';
+import CuratorRequestDialog from './CuratorVote';
 import * as React from 'react';
 import * as CuratorActions from '../../actions/curator';
 import { Curator } from '../../model/model';
@@ -12,10 +13,13 @@ export namespace CuratorTable {
     export interface Props extends WithStyles<typeof styles> {
         curators: Curator[];
         actions: typeof CuratorActions;
+        registryName: string;
     }
 
     export interface State {
-        open: boolean;
+        openRequest: boolean;
+        openVote: boolean;
+        curator: Curator;
       }
 }
 
@@ -26,12 +30,13 @@ class CuratorTable extends React.Component<CuratorTable.Props> {
     }
 
     state = {
-        open: false,
+        openRequest: false,
+        openVote: false,
         curator: {}
     };
 
     vote(curator: Curator) {
-        this.setState({ open: true, curator : curator });
+        this.setState({ openRequest: false, openVote: true, curator: curator});
     }
 
     render() {
@@ -42,9 +47,15 @@ class CuratorTable extends React.Component<CuratorTable.Props> {
             <Paper className={classes.paper}>
             <CuratorVoteDialog
             actions={actions}
-            open={this.state.open}
+            open={this.state.openVote}
             curator={this.state.curator}
-            onClose={() => this.setState({ open: false })}
+            onClose={() => this.setState({ openRequest: false, openVote: false, curator: {} })}
+          />
+          <CuratorRequestDialog
+            actions={actions}
+            registryName={this.props.registryName}
+            open={this.state.openRequest}
+            onClose={() => this.setState({ openRequest: false, openVote: false, curator: {} })}
           />
                 <Table className={classes.table}>
                     <TableHead>
