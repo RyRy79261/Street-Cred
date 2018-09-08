@@ -115,6 +115,7 @@ contract CCRCore {
                     curators[_subject].pending = false;
                     curatorCount = curatorCount + 1;  // Probably dont need safe math, need to confirm
                     delete curators[_subject].votes;
+                    emit CuratorApplicationConcluded(_subject, true);
                 }
             }
         } else {
@@ -122,6 +123,9 @@ contract CCRCore {
                 curators[_subject].votes.against.push(msg.sender);
                 if(checkQuorum(curators[_subject].votes.against.length, curatorCount, quorum)) {
                     issueClaim(_subject, "Curator", false);
+                    curators[_subject].pending = false;
+                    delete curators[_subject].votes;
+                    emit CuratorApplicationConcluded(_subject, false);
                 }
             }
         }
