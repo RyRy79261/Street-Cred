@@ -86,6 +86,8 @@ contract CCRCore {
                 races[_subject][_claim].votes.inFavor.push(msg.sender);
                 if(checkQuorum(races[_subject][_claim].votes.inFavor.length)) {
                     issueClaim(_subject, _claim, true);
+                    delete races[_subject][_claim];
+                    emit RaceConcluded(_subject, _claim, true);
                 }
             }
            
@@ -94,6 +96,8 @@ contract CCRCore {
                 races[_subject][_claim].votes.against.push(msg.sender);
                 if(checkQuorum(races[_subject][_claim].votes.against.length)) {
                     issueClaim(_subject, _claim, true);
+                    delete races[_subject][_claim];
+                    emit RaceConcluded(_subject, _claim, false);
                 }
             }
         }
@@ -136,12 +140,9 @@ contract CCRCore {
 
     function issueClaim(address _subject, string _claim, bool _passed) internal {
         if(_passed){
-            delete races[_subject][_claim];
             claimsRegistry.setClaim(_subject, keccak256(abi.encodePacked(_claim)), valid);
         } else {
-            delete races[_subject][_claim];
             claimsRegistry.setClaim(_subject, keccak256(abi.encodePacked(_claim)), invalid);
         }
-        emit RaceConcluded(_subject, _claim, _passed);
     }
 }
