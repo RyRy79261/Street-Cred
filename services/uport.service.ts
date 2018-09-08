@@ -32,15 +32,30 @@ export default class uPortService {
         return contractAbstraction;
     }
 
-    public getTransactionReceiptMined(txHash: string) {
-        
-        async (_error, _txHash) => {
-            if (_error) { reject(_error); }
-            // Request placed
-            let error, result;
-            [error, result] = await to(this.uportService.getTransactionReceiptMined(_txHash));
-            if (!result.blockNumber) {
-                reject(error); }
+    // @TODO: Cant get rif of error
+    public async getTransactionReceiptMined(txHash: string, interval: any = null) {
+        const transactionReceiptAsync = (resolve: any, reject: any) => {
+            this.web3.eth.getTransactionReceipt(txHash, (error: any, receipt: any) => {
+                if (error) {
+                    reject(error);
+                } else if (receipt == null) {
+                    setTimeout(
+                        () => transactionReceiptAsync(resolve, reject),
+                        interval ? parseInt(interval) : 500);
+                } else {
+                    resolve(receipt);
+                }
+            });
+        };
+
+        if (Array.isArray(txHash)) {
+            return Promise.all(txHash.map(
+                oneTxHash => this.getTransactionReceiptMined(oneTxHash, interval)));
+        } else if (typeof txHash === 'string') {
+            return new Promise(transactionReceiptAsync);
+        } else {
+            throw new Error('Invalid Type: ' + txHash);
+        }
     }
 }
 
