@@ -7,7 +7,7 @@ contract CCRCore {
     EthereumClaimsRegistry public claimsRegistry;
     string public name;
     uint private quorum;
-    uint private curatorCount = 1;
+    uint public curatorCount = 1;
 
     bytes32 internal constant valid = keccak256("true");
     bytes32 internal constant invalid = keccak256("false");
@@ -86,8 +86,8 @@ contract CCRCore {
             );
     }
 
-   // Curator applications
-   // To manually initiate a curator
+    // Curator applications
+    // To manually initiate a curator
     function addCurator(address _newCurator) public onlyCurator {
         require(curators[_newCurator].validated == false, "Already curator");
         require(curators[_newCurator].pending == false, "Vote already initiated"); 
@@ -124,27 +124,25 @@ contract CCRCore {
     function voteOnClaim(address _subject, string _claim, bool _support) public onlyCurator {
         require(races[_subject][_claim].pending == true, "Claim race is not underway");
         if(_support) {
-            if(notVoted(races[_subject][_claim].inFavor, msg.sender) == false){
-                races[_subject][_claim].inFavor.push(msg.sender);
-                if(checkQuorum(races[_subject][_claim].inFavor.length, curatorCount, quorum)) {
-                    if(races[_subject][_claim].revoking) {
-                        revokeClaim(_subject, _claim);
-                        delete races[_subject][_claim];
-                    }else{
-                        issueClaim(_subject, _claim, true);
-                        delete races[_subject][_claim];
-                        emit ClaimRaceConcluded(_subject, _claim, true);
-                    }
+            require(notVoted(races[_subject][_claim].inFavor, msg.sender) == true, "Already cast vote");
+            races[_subject][_claim].inFavor.push(msg.sender);
+            if(checkQuorum(races[_subject][_claim].inFavor.length, curatorCount, quorum)) {
+                if(races[_subject][_claim].revoking) {
+                    revokeClaim(_subject, _claim);
+                    delete races[_subject][_claim];
+                }else{
+                    issueClaim(_subject, _claim, true);
+                    delete races[_subject][_claim];
+                    emit ClaimRaceConcluded(_subject, _claim, true);
                 }
             }
         } else {
-            if(notVoted(races[_subject][_claim].against, msg.sender) == false){
-                races[_subject][_claim].against.push(msg.sender);
-                if(checkQuorum(races[_subject][_claim].against.length, curatorCount, quorum)) {
-                    issueClaim(_subject, _claim, true);
-                    delete races[_subject][_claim];
-                    emit ClaimRaceConcluded(_subject, _claim, false);
-                }
+            require(notVoted(races[_subject][_claim].against, msg.sender) == true, "Already cast vote");
+            races[_subject][_claim].against.push(msg.sender);
+            if(checkQuorum(races[_subject][_claim].against.length, curatorCount, quorum)) {
+                issueClaim(_subject, _claim, true);
+                delete races[_subject][_claim];
+                emit ClaimRaceConcluded(_subject, _claim, false);
             }
         }
     }
@@ -178,6 +176,10 @@ contract CCRCore {
 
     function checkQuorum(uint _votes, uint _voterCount, uint _quorum) internal pure returns(bool quorumReached) {
         quorumReached = (_voterCount/_quorum) <= _votes;
+    }
+
+    function calcQuorum(uint _voterCount, uint _quorum) public pure returns(uint){
+        return (_voterCount/_quorum);
     }
 
     // Refactor probably
