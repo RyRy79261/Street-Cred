@@ -4,51 +4,42 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { Registry } from '../model/model';
 import { RootState } from '../reducers';
-import { Connect, SimpleSigner } from 'uport-connect';
+import { bindActionCreators } from 'redux';
+import * as RegistryActions from '../actions/registry';
+import uPortService from '../services/uport.service';
 
 
 export namespace HomePage {
   export interface Props extends RouteComponentProps<void>, WithStyles<typeof styles> {
     registries: Registry[];
+    registryActions: typeof RegistryActions;
   }
 
   export interface State {
-    creds : any
+    user : any
   }
 }
 
 class HomePage extends React.Component<HomePage.Props> {
  
   state = {
-    creds : {}
+    user : {}
   };
 
-  uportService = new Connect('CCR Manager - StreetCred', {
-    clientId: '2ozRcEoFKBLthSH5e9cfs4jX3vYgLjZupXM',
-    network: 'rinkeby',
-    signer: SimpleSigner('a314950dfc65040ba288691c1031151d5fbb49080390106b77ad7c18b8a376aa')
-  });
+   uportService = new uPortService(); 
 
-  async login() {
-    const credentials = await this.uportService.requestCredentials({
-        requested: ['name', 'phone', 'country'],
-        notifications: true // We want this if we want to recieve credentials
-    });
-
-    this.setState({creds : credentials})
-    return credentials;
-}
-  async loginUport (uportService : any){
+  async loginUport () {
     debugger;
-    await this.login();
+    await this.uportService.login();
+    this.props.registryActions.getRegistries(this.uportService);
   }
 
   render() {
-    const uportService = this.uportService;
+
     return (
       <div className={this.props.classes.root}>
         <Typography variant="display1" gutterBottom>
-          <Button className={this.props.classes.button} variant="raised" color="secondary" onClick={() => this.loginUport(uportService)}>
+          <Button className={this.props.classes.button} variant="raised" color="secondary" onClick={() => this.loginUport()}>
               Login
           </Button>
           
@@ -76,4 +67,10 @@ function mapStateToProps(state: RootState) {
   };
 }
 
-export default (withStyles(styles)<{}>(connect(mapStateToProps)(HomePage)));
+function mapDispatchToProps(dispatch: any) {
+  return {
+    registryActions: bindActionCreators(RegistryActions as any, dispatch)
+  };
+}
+
+export default (withStyles(styles)<{}>(connect(mapStateToProps, mapDispatchToProps)(HomePage)));

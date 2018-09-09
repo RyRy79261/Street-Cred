@@ -21,6 +21,8 @@ if (process.env.NODE_ENV === 'development') {
 
 const store = createStore(rootReducer, {}, middleware) as Store<RootState>;
 
+//TODO: setup listeners & initial load
+
 class ReduxRoot extends React.Component {
 
     state = {

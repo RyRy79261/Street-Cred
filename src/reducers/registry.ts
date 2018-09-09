@@ -1,6 +1,6 @@
 import createReducer from './createReducer';
 import { Action, ActionType, Registry } from '../model/model';
-
+//TODO : return proper state
 export const registryList = createReducer([], {
     [ActionType.GET_REGISTRIES](state: Registry[], action: Action<null>) {
         return [state, action.payload];

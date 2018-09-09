@@ -19,15 +19,15 @@ class RegistryTable extends React.Component<RegistryTable.Props> {
     }
 
     onRowClick(registry: Registry) {
-       
+       //TODO
     }
 
     openClaims(registry: Registry) {
-       
+       //TODO
     }
 
     openCurators(registry: Registry) {
-       
+       //TODO
     }
 
     render() {
