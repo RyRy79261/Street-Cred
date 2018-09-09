@@ -28,7 +28,7 @@ const history = createBrowserHistory();
 class App extends React.Component<App.Props, App.State> {
 
     state = {
-        mobileOpen: true,
+        mobileOpen: true
     };
 
     routes = (
@@ -48,7 +48,7 @@ class App extends React.Component<App.Props, App.State> {
                 <div className={this.props.classes.drawerHeader} />
                 <Divider />
                 <List>
-                    <ListItem button onClick={() => history.push('/')}>
+                    <ListItem button={true} onClick={() => history.push('/')}>
                         <ListItemIcon>
                             <HomeIcon />
                         </ListItemIcon>

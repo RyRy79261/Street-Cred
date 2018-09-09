@@ -44,19 +44,19 @@ class ClaimTable extends React.Component<ClaimTable.Props> {
 
         return (
             
-            <Paper className={classes.paper}>
-            <ClaimVoteDialog
-            actions={actions}
-            open={this.state.openVote}
-            claim={this.state.claim}
-            onClose={() => this.setState({ openRequest: false, openVote: false, claim: {}  })}
-          />
-          <ClaimRequestDialog
-            actions={actions}
-            registryName={this.props.registryName}
-            open={this.state.openRequest}
-            onClose={() => this.setState({ openRequest: false, openVote: false, claim: {} })}
-          />
+                <Paper className={classes.paper}>
+                <ClaimVoteDialog
+                    actions={actions}
+                    open={this.state.openVote}
+                    claim={this.state.claim}
+                    onClose={() => this.setState({ openRequest: false, openVote: false, claim: {}  })}
+                />
+                <ClaimRequestDialog
+                    actions={actions}
+                    registryName={this.props.registryName}
+                    open={this.state.openRequest}
+                    onClose={() => this.setState({ openRequest: false, openVote: false, claim: {} })}
+                />
                 <Table className={classes.table}>
                     <TableHead>
                         <TableRow>

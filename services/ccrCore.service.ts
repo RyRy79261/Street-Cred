@@ -17,7 +17,7 @@ export class CCRCoreFactoryService {
     }
 
     public async fetchAllCCR(_addresses: string[]){
-        for(let i in _addresses){
+        for(let i of _addresses){
             this.ccrContractArray.push(await this.contractInstance.at(_addresses[i]))
         }
     }    

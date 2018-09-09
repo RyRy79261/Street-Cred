@@ -51,17 +51,17 @@ class CuratorTable extends React.Component<CuratorTable.Props> {
             
             <Paper className={classes.paper}>
             <CuratorVoteDialog
-            actions={actions}
-            open={this.state.openVote}
-            curator={this.state.curator}
-            onClose={() => this.setState({ openRequest: false, openVote: false, curator: {} })}
-          />
-          <CuratorRequestDialog
-            actions={actions}
-            registryName={this.props.registryName}
-            open={this.state.openRequest}
-            onClose={() => this.setState({ openRequest: false, openVote: false, curator: {} })}
-          />
+                actions={actions}
+                open={this.state.openVote}
+                curator={this.state.curator}
+                onClose={() => this.setState({ openRequest: false, openVote: false, curator: {} })}
+            />
+            <CuratorRequestDialog
+                actions={actions}
+                registryName={this.props.registryName}
+                open={this.state.openRequest}
+                onClose={() => this.setState({ openRequest: false, openVote: false, curator: {} })}
+            />
                 <Table className={classes.table}>
                     <TableHead>
                         <TableRow>
@@ -78,7 +78,7 @@ class CuratorTable extends React.Component<CuratorTable.Props> {
                                     hover
                                 >
                                     <TableCell padding="dense">{curator.address}</TableCell>
-                                    <TableCell padding="dense">{curator.pending ? <PendingIcon />: curator.validated ? <TrueIcon /> : <FalseIcon /> }</TableCell>
+                                    <TableCell padding="dense">{curator.pending ? <PendingIcon />: curator.validated ? <TrueIcon /> : <FalseIcon />}</TableCell>
                                     <TableCell padding="dense">
                                         <IconButton
                                             aria-label="Vote"

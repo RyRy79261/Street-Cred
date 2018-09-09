@@ -1,6 +1,6 @@
 import uPortService from './uport.service';
 const ccrCoreFactoryAbi = require('../build/contracts/CCRCoreFactory.json')
-const factoryAddress = "0xc9ed21ffcc88a5072454c43bdfdbbe3430888b19"
+const factoryAddress = '0xc9ed21ffcc88a5072454c43bdfdbbe3430888b19';
 
 export class CCRCoreFactoryService {
     private factoryContract: any;

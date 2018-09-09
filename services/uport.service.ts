@@ -42,7 +42,7 @@ export default class uPortService {
                 } else if (receipt == null) {
                     setTimeout(
                         () => transactionReceiptAsync(resolve, reject),
-                        interval ? parseInt(interval) : 500);
+                        interval ? parseInt(interval, 10) : 500);
                 } else {
                     resolve(receipt);
                 }
