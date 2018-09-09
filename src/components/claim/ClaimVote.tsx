@@ -20,6 +20,7 @@ class ClaimVote extends React.Component<ClaimVote.Props> {
 
     state = {
         vote: {}
+        
     };
 
     static getDerivedStateFromProps(nextProps: Readonly<ClaimVote.Props>, prevState: Readonly<ClaimVote.State>) {

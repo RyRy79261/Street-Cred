@@ -3,7 +3,7 @@ import VoteIcon from '@material-ui/icons/HowToVote';
 import FalseIcon from '@material-ui/icons/NotInterested';
 import TrueIcon from '@material-ui/icons/CheckCircle';
 import ClaimVoteDialog from './ClaimVote';
-import ClaimRequestDialog from './ClaimVote';
+import ClaimRequestDialog from './ClaimRequest';
 import * as React from 'react';
 import * as ClaimActions from '../../actions/claim';
 import { ClaimRace, ClaimList } from '../../model/model';
@@ -19,6 +19,7 @@ export namespace ClaimTable {
         openRequest: boolean;
         openVote: boolean;
         claim: ClaimRace;
+        back: Function;
       }
 }
 
@@ -31,7 +32,7 @@ class ClaimTable extends React.Component<ClaimTable.Props> {
     state = {
         openRequest: false,
         openVote: false,
-        claim: {}
+        claim: {  pending: true, statement: '', target: '', address: '', owner: true }
     };
 
     vote(claim: ClaimRace) {
@@ -93,15 +94,14 @@ class ClaimTable extends React.Component<ClaimTable.Props> {
                                     key={claimSet.address}
                                     hover
                                 >
-                                    <TableCell padding="dense">{claimSet.issuer}</TableCell>
+                                    <TableCell padding="dense">{claimSet.address}</TableCell>
                                     <TableCell padding="dense">{claimSet.statement}</TableCell>
                             <TableCell padding="dense">{claimSet.value == 0 ? <FalseIcon /> : <TrueIcon />}</TableCell>
                                     <TableCell padding="dense">
                                         <IconButton
                                             aria-label="Vote"
                                             color="default"
-                                            onClick={() => this.vote(claimSet)}
-                                            disabled="true"
+                                            disabled
                                         >
                                             <VoteIcon />
                                         </IconButton>

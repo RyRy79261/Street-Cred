@@ -5,6 +5,8 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { bindActionCreators } from 'redux';
 import * as RegistryActions from '../actions/registry';
+import * as ClaimActions from '../actions/claim';
+import * as CuratorActions from '../actions/curator';
 import RegistryTable from '../components/registry/RegistryTable';
 import CuratorTable from '../components/curator/CuratorTable';
 import ClaimTable from '../components/claim/ClaimTable';
@@ -16,7 +18,9 @@ import { isSmartphone } from '../responsive';
 export namespace RegistryPage {
   export interface Props extends RouteComponentProps<void>, WithStyles<typeof styles>, WithWidthProps {
     registries: Registry[];
-    actions: typeof RegistryActions;
+    registryActions: typeof RegistryActions;
+    claimActions: typeof ClaimActions;
+    curatorActions: typeof CuratorActions;
   }
 
   export interface State {
@@ -70,18 +74,18 @@ class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.Stat
   };
 
   render() {                       
-    const { classes, actions, registries, width } = this.props;
+    const { classes, registryActions, claimActions, curatorActions, registries, width } = this.props;
 
     let tableView;
 
     if(this.state.showRegistries){
-      tableView = <RegistryTable registries={registries} actions={actions} back={this.handleChange} openList={this.handleChange} />;
+      tableView = <RegistryTable registries={registries} actions={registryActions} openList={this.handleChange} />;
     }
     else if(this.state.showCurators){
-      tableView = <CuratorTable registries={registries} actions={actions} back={this.handleChange} registryName={this.state.selectedRegistryName} />;
+      tableView = <CuratorTable curators={registries} actions={curatorActions} back={this.handleChange} registryName={this.state.selectedRegistryName} />;
     }
     else if(this.state.showClaims){
-      tableView = <ClaimTable registries={registries} actions={actions} back={this.handleChange} registryName={this.state.selectedRegistryName} />;
+      tableView = <ClaimTable claims={registries} actions={claimActions} back={this.handleChange} registryName={this.state.selectedRegistryName} />;
     }
 
     return (

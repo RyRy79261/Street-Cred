@@ -14,6 +14,7 @@ export namespace CuratorTable {
         curators: Curator[];
         actions: typeof CuratorActions;
         registryName: string;
+        back: Function;
     }
 
     export interface State {

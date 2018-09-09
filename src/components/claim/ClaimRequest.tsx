@@ -19,7 +19,7 @@ export namespace ClaimRequest{
 class ClaimRequest extends React.Component<ClaimRequest.Props> {
 
     state = {
-        claim: {}
+        claim: {  pending: true, statement: '', target: '', address: '', owner: true }
     };
 
     static getDerivedStateFromProps(nextProps: Readonly<ClaimRequest.Props>, prevState: Readonly<ClaimRequest.State>) {
@@ -31,10 +31,10 @@ class ClaimRequest extends React.Component<ClaimRequest.Props> {
 
     handleClose = () => {
         this.setState({
-            claim: this.props.claim
+            claim: this.state.claim
         });
 
-        this.props.actions.makeClaim(this.props.claim);
+        this.props.actions.makeClaim(this.state.claim);
         this.props.onClose();
 
         this.setState({ claim: {} });

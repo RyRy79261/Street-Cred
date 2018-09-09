@@ -8,6 +8,7 @@ export namespace RegistryTable {
     export interface Props extends WithStyles<typeof styles> {
         registries: Registry[];
         actions: typeof RegistryActions;
+        openList: Function;
     }
 }
 
