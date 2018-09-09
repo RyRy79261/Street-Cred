@@ -1,6 +1,3 @@
-/**
- * Created by toni on 12.03.2017.
- */
 import { Action } from '../model/model';
 
 export default function createReducer(initialState: Object, handlers: Object) {

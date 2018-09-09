@@ -1,4 +1,4 @@
-import { Button, createStyles, Dialog, DialogActions, DialogTitle, TextField, Theme, WithStyles, withStyles } from '@material-ui/core';
+import { Button, createStyles, Dialog, DialogActions, DialogTitle, Theme, WithStyles, withStyles } from '@material-ui/core';
 import * as React from 'react';
 import * as CuratorActions from '../../actions/curator';
 import { Curator, Vote } from '../../model/model';
@@ -19,7 +19,7 @@ export namespace CuratorVote {
 class CuratorVote extends React.Component<CuratorVote.Props> {
 
     state = {
-        vote: {}
+        vote: { against : false, target : ''}
     };
 
     static getDerivedStateFromProps(nextProps: Readonly<CuratorVote.Props>, prevState: Readonly<CuratorVote.State>) {
@@ -29,13 +29,13 @@ class CuratorVote extends React.Component<CuratorVote.Props> {
         this.props.onClose();
     };
 
-    handleClose = (against: boolean) => {
+    handleClose = (against: boolean) => (event : any) => {
 
         this.setState({
             vote: { against: against, target: this.props.curator.address }
         });
 
-        this.props.actions.voteCurator(this.state.vote, this.props.curator);
+        this.props.actions.voteCurator(this.props.curator, this.state.vote);
         this.props.onClose();
 
         this.setState({ vote: {} });
@@ -45,7 +45,7 @@ class CuratorVote extends React.Component<CuratorVote.Props> {
 
         return (
             <Dialog open={this.props.open} onClose={this.cancel}>
-                <DialogTitle>Curator: "{this.props.claim.address}"</DialogTitle>
+                <DialogTitle>Curator: "{this.props.curator.address}"</DialogTitle>
                
                 <DialogActions>
                     <Button color="primary" onClick={this.handleClose(false)}>

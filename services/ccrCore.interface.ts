@@ -36,7 +36,7 @@ export const getClaimState = (_subject: string, _claim: string) => {
 export const getCuratorState = (_subject: string) => { 
     return {
         subject: _subject
-    } 
+    }
 }
 
 export const addCurator = (_newCurator: string) => { 

@@ -1,4 +1,4 @@
-import { Button, createStyles, Dialog, DialogActions, DialogTitle, TextField, Theme, WithStyles, withStyles } from '@material-ui/core';
+import { Button, createStyles, Dialog, DialogActions, DialogTitle, Theme, WithStyles, withStyles } from '@material-ui/core';
 import * as React from 'react';
 import * as ClaimActions from '../../actions/claim';
 import { ClaimRace, Vote } from '../../model/model';
@@ -19,7 +19,7 @@ export namespace ClaimVote{
 class ClaimVote extends React.Component<ClaimVote.Props> {
 
     state = {
-        vote: {}
+        vote: { against : false, target : '' }
         
     };
 
@@ -42,6 +42,18 @@ class ClaimVote extends React.Component<ClaimVote.Props> {
         this.setState({ vote: {} });
     };
 
+    vote = (against : boolean) => (event : any) => {
+
+        this.setState({
+            vote: { against: against, target: this.props.claim.address }
+        });
+
+        this.props.actions.voteOnClaim(this.state.vote, this.props.claim);
+        this.props.onClose();
+
+        this.setState({ vote: {} });
+    };
+
     render() {
 
         return (
@@ -49,10 +61,10 @@ class ClaimVote extends React.Component<ClaimVote.Props> {
                 <DialogTitle>Claim: "{this.props.claim.statement}"</DialogTitle>
                
                 <DialogActions>
-                    <Button color="primary" onClick={this.handleClose(false)}>
+                    <Button color="primary" onClick={this.vote(false)}>
                         Approve
                     </Button>
-                    <Button color="primary" onClick={this.handleClose(true)}>
+                    <Button color="primary" onClick={this.vote(true)}>
                         Deny
                     </Button>
                 </DialogActions>

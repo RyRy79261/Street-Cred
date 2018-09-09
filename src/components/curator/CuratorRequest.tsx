@@ -1,4 +1,4 @@
-import { Button, createStyles, Dialog, DialogActions, DialogTitle, TextField, Theme, WithStyles, withStyles } from '@material-ui/core';
+import { Button, createStyles, Dialog, DialogActions, DialogTitle, Theme, WithStyles, withStyles } from '@material-ui/core';
 import * as React from 'react';
 import * as CuratorActions from '../../actions/curator';
 import { Curator } from '../../model/model';
@@ -19,7 +19,11 @@ export namespace CuratorRequest{
 class CuratorRequest extends React.Component<CuratorRequest.Props> {
 
     state = {
-        curator: {}
+        curator: {address: '',
+            pending: false,
+            validated: false,
+            target: '',
+            owner: true }
     };
 
     static getDerivedStateFromProps(nextProps: Readonly<CuratorRequest.Props>, prevState: Readonly<CuratorRequest.State>) {
@@ -31,10 +35,10 @@ class CuratorRequest extends React.Component<CuratorRequest.Props> {
 
     handleClose = () => {
         this.setState({
-            claim: this.props.curator
+            curator: this.state.curator
         });
 
-        this.props.actions.applyToCurate(this.props.curator);
+        this.props.actions.applyToCurate(this.state.curator);
         this.props.onClose();
 
         this.setState({ curator: {} });

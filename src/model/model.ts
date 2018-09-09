@@ -28,7 +28,7 @@ export interface Curator {
     address: string,
     pending: boolean,
     validated: boolean,
-    target: number //the registry its applying to,
+    target: string, //the registry its applying to,
     owner: boolean //whether user is owner
 }
 

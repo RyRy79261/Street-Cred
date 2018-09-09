@@ -4,7 +4,7 @@ import FalseIcon from '@material-ui/icons/NotInterested';
 import PendingIcon from '@material-ui/icons/AccessTime';
 import TrueIcon from '@material-ui/icons/CheckCircle';
 import CuratorVoteDialog from './CuratorVote';
-import CuratorRequestDialog from './CuratorVote';
+import CuratorRequestDialog from './CuratorRequest';
 import * as React from 'react';
 import * as CuratorActions from '../../actions/curator';
 import { Curator } from '../../model/model';
@@ -33,7 +33,11 @@ class CuratorTable extends React.Component<CuratorTable.Props> {
     state = {
         openRequest: false,
         openVote: false,
-        curator: {}
+        curator: {address: '',
+        pending: false,
+        validated: false,
+        target: '',
+        owner: true }
     };
 
     vote(curator: Curator) {

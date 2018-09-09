@@ -11,7 +11,7 @@ import RegistryTable from '../components/registry/RegistryTable';
 import CuratorTable from '../components/curator/CuratorTable';
 import ClaimTable from '../components/claim/ClaimTable';
 import RegistryAddDialog from '../components/registry/RegistryAdd';
-import { Registry } from '../model/model';
+import { Registry, Curator, ClaimList } from '../model/model';
 import { RootState } from '../reducers';
 import { isSmartphone } from '../responsive';
 
@@ -29,6 +29,8 @@ export namespace RegistryPage {
     showCurators: boolean;
     showClaims: boolean;
     selectedRegistryName: string;
+    curators: Curator[];
+    claimList: ClaimList;
   }
 }
 
@@ -38,7 +40,9 @@ class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.Stat
     showRegistries: true,
     showCurators: false,
     showClaims: false,
-    selectedRegistryName: ''
+    selectedRegistryName: '',
+    curators: [],
+    claimList: { claimRaces: [] , claimSets : [] } 
   };
 
   handleChange = (eventName: string, registryName: string) => {
@@ -53,6 +57,8 @@ class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.Stat
       });
       }
       case "showCurators": {
+
+
         this.setState({
           open: false,
           showRegistries: false,
@@ -82,10 +88,10 @@ class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.Stat
       tableView = <RegistryTable registries={registries} actions={registryActions} openList={this.handleChange} />;
     }
     else if(this.state.showCurators){
-      tableView = <CuratorTable curators={registries} actions={curatorActions} back={this.handleChange} registryName={this.state.selectedRegistryName} />;
+      tableView = <CuratorTable curators={this.state.curators} actions={curatorActions} back={this.handleChange} registryName={this.state.selectedRegistryName} />;
     }
     else if(this.state.showClaims){
-      tableView = <ClaimTable claims={registries} actions={claimActions} back={this.handleChange} registryName={this.state.selectedRegistryName} />;
+      tableView = <ClaimTable claimList={this.state.claimList} actions={claimActions} back={this.handleChange} registryName={this.state.selectedRegistryName} />;
     }
 
     return (
@@ -97,7 +103,7 @@ class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.Stat
         justify={'flex-start'}
       >
         <RegistryAddDialog
-          actions={actions}
+          actions={registryActions}
           open={this.state.open}
           onClose={() => this.setState({ open: false })}
         />
@@ -151,7 +157,9 @@ function mapStateToProps(state: RootState) {
 
 function mapDispatchToProps(dispatch: any) {
   return {
-    actions: bindActionCreators(RegistryActions as any, dispatch)
+    registryActions: bindActionCreators(RegistryActions as any, dispatch),
+    claimActions: bindActionCreators(ClaimActions as any, dispatch),
+    curatorActions: bindActionCreators(CuratorActions as any, dispatch),
   };
 }
 

@@ -53,7 +53,7 @@ class RegistryTable extends React.Component<RegistryTable.Props> {
                                     onClick={event => this.onRowClick(n)}
                                 >
                                     <TableCell padding="dense">{n.name}</TableCell>
-                                    <TableCell padding="dense"> <Checkbox checked={n.amCurator} disabled="true"/></TableCell>
+                                    <TableCell padding="dense"> <Checkbox checked={n.amCurator} disabled/></TableCell>
                                     <TableCell padding="dense">
                                         <IconButton
                                             aria-label="View Claims"

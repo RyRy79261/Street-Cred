@@ -13,13 +13,13 @@ export namespace ClaimTable {
         claimList: ClaimList,
         actions: typeof ClaimActions;
         registryName: string;
+        back: Function;
     }
 
     export interface State {
         openRequest: boolean;
         openVote: boolean;
         claim: ClaimRace;
-        back: Function;
       }
 }
 
