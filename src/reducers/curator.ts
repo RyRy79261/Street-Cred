@@ -1,6 +1,6 @@
 import createReducer from './createReducer';
 import { Action, ActionType, Vote, Curator } from '../model/model';
-
+//TODO : return proper state
 export const curatorList = createReducer([], {
     [ActionType.GET_CURATORS](state: Curator[], action: Action<string>) {
         return [state, action.payload];

@@ -34,6 +34,7 @@ export namespace RegistryPage {
   }
 }
 
+
 class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.State> {
   state = {
     open: false,
@@ -44,6 +45,7 @@ class RegistryPage extends React.Component<RegistryPage.Props, RegistryPage.Stat
     curators: [],
     claimList: { claimRaces: [] , claimSets : [] } 
   };
+
 
   handleChange = (eventName: string, registryName: string) => {
     switch(eventName){
